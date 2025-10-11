@@ -1,5 +1,5 @@
 <div align="center">
-             <img src="/RAM_Disk!/images/RAMDISK.png" width="500" />
+             <img src="/RAM_Disk!/images/RAMDISK.png" width="300" />
              <h1>RAMDisk!</h1>
 </div>
 
@@ -15,7 +15,7 @@ Create, unmount RAM disks on macOS!
 
 
 <div align="center">
-             <img src="/RAM_Disk!/images/window1.png" width="700" />
+             <img src="/RAM_Disk!/images/window1.png" width="400" />
              
 </div>
 
