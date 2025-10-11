@@ -15,7 +15,7 @@ Create, unmount RAM disks on macOS!
 
 
 <div align="center">
-             <img src="/RAM_Disk!/images/window1.png" width="400" />
+             <img src="/RAM_Disk!/images/window1.png" width="600" />
              
 </div>
 
