@@ -3,7 +3,7 @@
              <h1>RAMDisk!</h1>
 </div>
 
-Create, unmount RAM disks on macOS!
+Create, manage RAM disks on macOS!
 
 * 100% Written is Swift
 * Uses built in macOS CLI tools! Diskutil and HDIUTIL
