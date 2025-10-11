@@ -6,8 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DCC91A902E9A352000D5A046 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DCC91A8F2E9A352000D5A046 /* LICENSE */; };
+		DCC91A922E9A353600D5A046 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DCC91A912E9A353600D5A046 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		DCC91A492E9A0AED00D5A046 /* RAM_Disk!.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RAM_Disk!.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCC91A8F2E9A352000D5A046 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		DCC91A912E9A353600D5A046 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -34,6 +41,8 @@
 			children = (
 				DCC91A4B2E9A0AED00D5A046 /* RAM_Disk! */,
 				DCC91A4A2E9A0AED00D5A046 /* Products */,
+				DCC91A8F2E9A352000D5A046 /* LICENSE */,
+				DCC91A912E9A353600D5A046 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +118,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCC91A902E9A352000D5A046 /* LICENSE in Resources */,
+				DCC91A922E9A353600D5A046 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,11 +269,16 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "RAM-Disk--Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "RAM_DISK!";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "This app needs to control Terminal to create a RAM disk";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.RAM-Disk-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -285,11 +301,16 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "RAM-Disk--Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "RAM_DISK!";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "This app needs to control Terminal to create a RAM disk";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.RAM-Disk-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
