@@ -51,9 +51,9 @@ struct ContentView: View {
             VStack(spacing: 8) {
                 Image(systemName: "internaldrive")
                     .font(.system(size: 48))
-                    .accentColor(.teal)
+                    .foregroundColor(.accentColor)
             
-                Text("RAM Disk Manager")
+                Text("RAMDisk! Manager")
                     .font(.title2)
                     .fontWeight(.semibold)
                 Text("Create fast temporary storage in memory")
@@ -80,7 +80,6 @@ struct ContentView: View {
                                     .foregroundColor(.secondary)
                                 TextField("Enter disk name", text: $diskName)
                                     .textFieldStyle(.roundedBorder)
-                                    .accentColor(.teal)
                             }
                             
                             // Disk Size
@@ -193,8 +192,7 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 500, minHeight: 600)
-        .tint(.teal)
-        .alert("RAM Disk Manager", isPresented: $showingAlert) {
+        .alert("RAMDisk! Manager", isPresented: $showingAlert) {
             Button("OK") { }
         } message: {
             Text(alertMessage)
@@ -256,8 +254,7 @@ struct DiskRowView: View {
     var body: some View {
         HStack {
             Image(systemName: "internaldrive.fill")
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(.teal, .teal.opacity(0.5))
+                .foregroundColor(.accentColor)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(diskName)
@@ -435,38 +432,6 @@ class RAMDiskManager: ObservableObject {
             } else {
                 print("Custom icon command executed for \(volumeName)")
             }
-        }
-    }
-    
-    private func copyIconToVolume(from iconURL: URL, to volumePath: String) {
-        let iconPath = "\(volumePath)/.VolumeIcon.icns"
-        
-        do {
-            // Read the icns file data
-            let iconData = try Data(contentsOf: iconURL)
-            
-            // Write to the RAM disk
-            try iconData.write(to: URL(fileURLWithPath: iconPath))
-            
-            // Set the custom icon flag using SetFile
-            let escapedPath = volumePath.replacingOccurrences(of: "'", with: "'\\''")
-            let script = """
-            tell application "Terminal"
-                do script "SetFile -a C '\(escapedPath)'; exit"
-            end tell
-            """
-            
-            if let scriptObject = NSAppleScript(source: script) {
-                var error: NSDictionary?
-                scriptObject.executeAndReturnError(&error)
-                if let err = error {
-                    print("SetFile error: \(err)")
-                }
-            }
-            
-            print("Custom icon set successfully for \(volumePath)")
-        } catch {
-            print("Failed to set custom icon: \(error)")
         }
     }
 }
