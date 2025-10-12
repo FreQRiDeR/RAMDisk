@@ -53,7 +53,7 @@ struct ContentView: View {
                     .font(.system(size: 48))
                     .foregroundColor(.accentColor)
             
-                Text("RAMDisk! Manager")
+                Text("RAM Disk Manager")
                     .font(.title2)
                     .fontWeight(.semibold)
                 Text("Create fast temporary storage in memory")
@@ -192,7 +192,7 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 500, minHeight: 600)
-        .alert("RAMDisk! Manager", isPresented: $showingAlert) {
+        .alert("RAM Disk Manager", isPresented: $showingAlert) {
             Button("OK") { }
         } message: {
             Text(alertMessage)
@@ -291,25 +291,50 @@ class RAMDiskManager: ObservableObject {
         // Escape single quotes and backslashes for shell
         let escapedName = name.replacingOccurrences(of: "'", with: "'\\''")
         
+        // Get the icon path
+        var iconPath = ""
+        if let bundlePath = Bundle.main.resourcePath {
+            let possiblePaths = [
+                "\(bundlePath)/AppIcon.icns",
+                "\(bundlePath)/appicon.icns",
+                "\(bundlePath)/images/appicon.icns"
+            ]
+            for path in possiblePaths {
+                if FileManager.default.fileExists(atPath: path) {
+                    iconPath = path.replacingOccurrences(of: "'", with: "'\\''")
+                    break
+                }
+            }
+        }
+        
         let formatCommand: String
         switch fileSystem {
         case "APFS":
-            formatCommand = "diskutil apfs create $(hdiutil attach -nomount ram://\(sectors)) '\(escapedName)' && touch /Volumes/'\(escapedName)'/."
+            formatCommand = "diskutil apfs create $(hdiutil attach -nomount ram://\(sectors)) '\(escapedName)'"
         case "HFS+":
-            formatCommand = "diskutil eraseDisk HFS+ '\(escapedName)' $(hdiutil attach -nomount ram://\(sectors)) && touch /Volumes/'\(escapedName)'/."
+            formatCommand = "diskutil eraseDisk HFS+ '\(escapedName)' $(hdiutil attach -nomount ram://\(sectors))"
         case "FAT32":
-            formatCommand = "diskutil eraseDisk FAT32 '\(escapedName)' MBR $(hdiutil attach -nomount ram://\(sectors)) && touch /Volumes/'\(escapedName)'/."
+            formatCommand = "diskutil eraseDisk FAT32 '\(escapedName)' MBR $(hdiutil attach -nomount ram://\(sectors))"
         case "ExFAT":
-            formatCommand = "diskutil eraseDisk ExFAT '\(escapedName)' MBR $(hdiutil attach -nomount ram://\(sectors)) && touch /Volumes/'\(escapedName)'/."
+            formatCommand = "diskutil eraseDisk ExFAT '\(escapedName)' MBR $(hdiutil attach -nomount ram://\(sectors))"
         default:
-            formatCommand = "diskutil apfs create $(hdiutil attach -nomount ram://\(sectors)) '\(escapedName)' && touch /Volumes/'\(escapedName)'/."
+            formatCommand = "diskutil apfs create $(hdiutil attach -nomount ram://\(sectors)) '\(escapedName)'"
         }
         
+        // Combine all commands into one script
+        var combinedCommand = formatCommand
+        combinedCommand += " && touch /Volumes/'\(escapedName)'/."
+        
+        if !iconPath.isEmpty {
+            combinedCommand += " && cp '\(iconPath)' /Volumes/'\(escapedName)'/.VolumeIcon.icns"
+            combinedCommand += " && SetFile -a C /Volumes/'\(escapedName)'"
+        }
+        
+        combinedCommand += "; exit"
+        
+        // Use do shell script instead of Terminal for reliability
         let script = """
-        tell application "Terminal"
-            activate
-            do script "\(formatCommand); exit"
-        end tell
+        do shell script "\(combinedCommand.replacingOccurrences(of: "\"", with: "\\\""))"
         """
         
         var error: NSDictionary?
@@ -327,9 +352,6 @@ class RAMDiskManager: ObservableObject {
             // Wait a moment for the disk to mount
             sleep(3)
             
-            // Set custom icon for the RAM disk
-            setCustomIcon(for: name)
-            
             // Track this disk as created by us
             createdDisks.insert(name)
             
@@ -344,10 +366,7 @@ class RAMDiskManager: ObservableObject {
         let escapedName = name.replacingOccurrences(of: "'", with: "'\\''")
         
         let script = """
-        tell application "Terminal"
-            activate
-            do script "diskutil eject /Volumes/'\(escapedName)'; exit"
-        end tell
+        do shell script "diskutil eject /Volumes/'\(escapedName)'"
         """
         
         var error: NSDictionary?
@@ -379,58 +398,6 @@ class RAMDiskManager: ObservableObject {
             // Simply show disks we've created
             DispatchQueue.main.async {
                 self.mountedDisks = Array(self.createdDisks).sorted()
-            }
-        }
-    }
-    
-    private func setCustomIcon(for volumeName: String) {
-        let volumePath = "/Volumes/\(volumeName)"
-        
-        // Get the path to the icon in the app bundle
-        guard let bundlePath = Bundle.main.resourcePath else {
-            print("Could not get bundle resource path")
-            return
-        }
-        
-        // Check multiple possible locations for the icon
-        let possiblePaths = [
-            "\(bundlePath)/AppIcon.icns",
-            "\(bundlePath)/appicon.icns",
-            "\(bundlePath)/images/appicon.icns",
-            "/Volumes/HD TRE/RAM_Disk!/RAM_Disk!/images/appicon.icns"
-        ]
-        
-        var iconSourcePath: String?
-        for path in possiblePaths {
-            if FileManager.default.fileExists(atPath: path) {
-                iconSourcePath = path
-                print("Found icon at: \(path)")
-                break
-            }
-        }
-        
-        guard let sourcePath = iconSourcePath else {
-            print("Icon file not found in any expected location")
-            return
-        }
-        
-        // Use Terminal to copy the icon and set the custom icon flag
-        let escapedSource = sourcePath.replacingOccurrences(of: "'", with: "'\\''")
-        let escapedVolume = volumePath.replacingOccurrences(of: "'", with: "'\\''")
-        
-        let script = """
-        tell application "Terminal"
-            do script "cp '\(escapedSource)' '\(escapedVolume)/.VolumeIcon.icns' && SetFile -a C '\(escapedVolume)'; exit"
-        end tell
-        """
-        
-        var error: NSDictionary?
-        if let scriptObject = NSAppleScript(source: script) {
-            scriptObject.executeAndReturnError(&error)
-            if let err = error {
-                print("Icon copy error: \(err)")
-            } else {
-                print("Custom icon command executed for \(volumeName)")
             }
         }
     }
