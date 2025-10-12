@@ -51,8 +51,9 @@ struct ContentView: View {
             VStack(spacing: 8) {
                 Image(systemName: "internaldrive")
                     .font(.system(size: 48))
-                    .foregroundColor(.accentColor)
-                Text("RAMDisk!")
+                    .accentColor(.teal)
+            
+                Text("RAM Disk Manager")
                     .font(.title2)
                     .fontWeight(.semibold)
                 Text("Create fast temporary storage in memory")
@@ -79,6 +80,7 @@ struct ContentView: View {
                                     .foregroundColor(.secondary)
                                 TextField("Enter disk name", text: $diskName)
                                     .textFieldStyle(.roundedBorder)
+                                    .accentColor(.teal)
                             }
                             
                             // Disk Size
@@ -191,6 +193,7 @@ struct ContentView: View {
             }
         }
         .frame(minWidth: 500, minHeight: 600)
+        .tint(.teal)
         .alert("RAM Disk Manager", isPresented: $showingAlert) {
             Button("OK") { }
         } message: {
@@ -253,7 +256,8 @@ struct DiskRowView: View {
     var body: some View {
         HStack {
             Image(systemName: "internaldrive.fill")
-                .foregroundColor(.accentColor)
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.teal, .teal.opacity(0.5))
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(diskName)
@@ -326,6 +330,9 @@ class RAMDiskManager: ObservableObject {
             // Wait a moment for the disk to mount
             sleep(3)
             
+            // Set custom icon for the RAM disk
+            setCustomIcon(for: name)
+            
             // Track this disk as created by us
             createdDisks.insert(name)
             
@@ -376,6 +383,90 @@ class RAMDiskManager: ObservableObject {
             DispatchQueue.main.async {
                 self.mountedDisks = Array(self.createdDisks).sorted()
             }
+        }
+    }
+    
+    private func setCustomIcon(for volumeName: String) {
+        let volumePath = "/Volumes/\(volumeName)"
+        
+        // Get the path to the icon in the app bundle
+        guard let bundlePath = Bundle.main.resourcePath else {
+            print("Could not get bundle resource path")
+            return
+        }
+        
+        // Check multiple possible locations for the icon
+        let possiblePaths = [
+            "\(bundlePath)/AppIcon.icns",
+            "\(bundlePath)/appicon.icns",
+            "\(bundlePath)/images/appicon.icns",
+            "/Volumes/HD TRE/RAM_Disk!/RAM_Disk!/images/appicon.icns"
+        ]
+        
+        var iconSourcePath: String?
+        for path in possiblePaths {
+            if FileManager.default.fileExists(atPath: path) {
+                iconSourcePath = path
+                print("Found icon at: \(path)")
+                break
+            }
+        }
+        
+        guard let sourcePath = iconSourcePath else {
+            print("Icon file not found in any expected location")
+            return
+        }
+        
+        // Use Terminal to copy the icon and set the custom icon flag
+        let escapedSource = sourcePath.replacingOccurrences(of: "'", with: "'\\''")
+        let escapedVolume = volumePath.replacingOccurrences(of: "'", with: "'\\''")
+        
+        let script = """
+        tell application "Terminal"
+            do script "cp '\(escapedSource)' '\(escapedVolume)/.VolumeIcon.icns' && SetFile -a C '\(escapedVolume)'; exit"
+        end tell
+        """
+        
+        var error: NSDictionary?
+        if let scriptObject = NSAppleScript(source: script) {
+            scriptObject.executeAndReturnError(&error)
+            if let err = error {
+                print("Icon copy error: \(err)")
+            } else {
+                print("Custom icon command executed for \(volumeName)")
+            }
+        }
+    }
+    
+    private func copyIconToVolume(from iconURL: URL, to volumePath: String) {
+        let iconPath = "\(volumePath)/.VolumeIcon.icns"
+        
+        do {
+            // Read the icns file data
+            let iconData = try Data(contentsOf: iconURL)
+            
+            // Write to the RAM disk
+            try iconData.write(to: URL(fileURLWithPath: iconPath))
+            
+            // Set the custom icon flag using SetFile
+            let escapedPath = volumePath.replacingOccurrences(of: "'", with: "'\\''")
+            let script = """
+            tell application "Terminal"
+                do script "SetFile -a C '\(escapedPath)'; exit"
+            end tell
+            """
+            
+            if let scriptObject = NSAppleScript(source: script) {
+                var error: NSDictionary?
+                scriptObject.executeAndReturnError(&error)
+                if let err = error {
+                    print("SetFile error: \(err)")
+                }
+            }
+            
+            print("Custom icon set successfully for \(volumePath)")
+        } catch {
+            print("Failed to set custom icon: \(error)")
         }
     }
 }
