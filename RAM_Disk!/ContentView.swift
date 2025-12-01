@@ -49,9 +49,11 @@ struct ContentView: View {
         VStack(spacing: 0) {
             // Header
             VStack(spacing: 8) {
-                Image(systemName: "internaldrive")
-                    .font(.system(size: 48))
-                    .foregroundColor(.accentColor)
+                Image("RAMDISK")
+                    .resizable() // allows scaling
+                    .scaledToFit() // keeps aspect ratio
+                    .frame(width: 96, height: 96)
+                    
             
                 Text("RAM Disk Manager")
                     .font(.title2)
